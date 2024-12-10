@@ -1,0 +1,7 @@
+<ModelRequest>
+  <scenarioNumber>3</scenarioNumber>
+  <drillingRate>1</drillingRate>
+  <oilPrice>1</oilPrice>
+  <exchangeRate>1</exchangeRate>
+  <dollarRate>2</dollarRate>
+</ModelRequest>

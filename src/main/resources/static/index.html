@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XML Request Interface with Axios</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .card {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        .form-label {
+            font-weight: 500;
+        }
+        .response-area {
+            background-color: #f8f9fa;
+            border-radius: 0.375rem;
+            border: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">XML Request Interface</h4>
+                </div>
+                <div class="card-body">
+                    <form id="xmlForm" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label for="scenarioNumber" class="form-label">Scenario Number</label>
+                            <input type="number" class="form-control" id="scenarioNumber" name="scenarioNumber" required>
+                            <div class="invalid-feedback">
+                                Please provide a scenario number.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="drillingRate" class="form-label">Drilling Rate</label>
+                            <input type="number" step="0.1" class="form-control" id="drillingRate" name="drillingRate" required>
+                            <div class="invalid-feedback">
+                                Please provide a drilling rate.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="oilPrice" class="form-label">Oil Price</label>
+                            <input type="number" step="0.1" class="form-control" id="oilPrice" name="oilPrice" required>
+                            <div class="invalid-feedback">
+                                Please provide an oil price.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="dollarRate" class="form-label">Exchange Rate</label>
+                            <input type="number" step="0.1" class="form-control" id="dollarRate" name="dollarRate" required>
+                            <div class="invalid-feedback">
+                                Please provide an exchange rate.
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-primary w-100" onclick="sendXmlRequest()">
+                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true" id="spinner"></span>
+                            Send Request
+                        </button>
+                    </form>
+
+                    <div class="mt-4">
+                        <h5>Response:</h5>
+                        <div class="response-area p-3" id="response"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Form validation
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+
+    async function sendXmlRequest() {
+        const form = document.getElementById('xmlForm');
+        if (!form.checkValidity()) {
+            form.classList.add('was-validated');
+            return;
+        }
+
+        const spinner = document.getElementById('spinner');
+        spinner.classList.remove('d-none');
+
+        const scenarioNumber = document.getElementById('scenarioNumber').value;
+        const drillingRate = document.getElementById('drillingRate').value;
+        const oilPrice = document.getElementById('oilPrice').value;
+        const dollarRate = document.getElementById('dollarRate').value;
+
+        const xmlData = `
+            <ModelRequest>
+                <scenarioNumber>${scenarioNumber}</scenarioNumber>
+                <drillingRate>${drillingRate}</drillingRate>
+                <oilPrice>${oilPrice}</oilPrice>
+                <dollarRate>${dollarRate}</dollarRate>
+            </ModelRequest>
+        `;
+
+        try {
+            const response = await axios.post("http://localhost:8080", xmlData, {
+                headers: {
+                    'Content-Type': 'application/xml'
+                }
+            });
+
+            document.getElementById('response').innerHTML = `
+                <div class="alert alert-success mb-0">
+                    <pre class="mb-0">${response.data}</pre>
+                </div>`;
+        } catch (error) {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(error.response?.data || '', 'application/xml');
+            const serializer = new XMLSerializer();
+
+            document.getElementById('response').innerHTML = `
+                <div class="alert alert-danger mb-0">
+                    <strong>Error ${error.response?.status || ''}: </strong>
+                    <pre class="mb-0">${error.response?.data ? serializer.serializeToString(xmlDoc) : error.message}</pre>
+                </div>`;
+        } finally {
+            spinner.classList.add('d-none');
+        }
+    }
+</script>
+
+</body>
+</html>

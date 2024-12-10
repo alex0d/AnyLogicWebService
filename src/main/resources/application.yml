@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: AnyLogicWebService
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/AnyLogicDB
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+      naming:
+        physical-strategy: simulation.anylogicwebservice.kpi.config.CamelCaseToUppercaseTablesAndColumnsNamingStrategy
